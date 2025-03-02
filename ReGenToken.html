@@ -1,0 +1,188 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReGenToken</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+        }
+        .token-container {
+            margin-top: 20px;
+        }
+        .token {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+        .token-name {
+            font-weight: bold;
+        }
+        .timer {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            background-color: green;
+        }
+        .token-value {
+            margin: 0 10px;
+        }
+        .hidden-token {
+            color: gray;
+        }
+        .button-container {
+            display: flex;
+            gap: 5px;
+        }
+        .login-container {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="login-container" class="login-container">
+            <h2>Login / Sign Up</h2>
+            <input type="text" id="username" placeholder="Enter username"><br><br>
+            <input type="password" id="password" placeholder="Enter password"><br><br>
+            <button onclick="login()">Login</button>
+            <button onclick="signUp()">Sign Up</button>
+        </div>
+        <div id="app-container" style="display:none;">
+            <h1>ReGenToken</h1>
+            <button onclick="createToken()">Create Token</button>
+            <div class="token-container" id="tokenContainer"></div>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        function checkAuth() {
+            if (localStorage.getItem("user")) {
+                document.getElementById("login-container").style.display = "none";
+                document.getElementById("app-container").style.display = "block";
+            } else {
+                document.getElementById("login-container").style.display = "block";
+                document.getElementById("app-container").style.display = "none";
+            }
+        }
+
+        function login() {
+            let username = document.getElementById("username").value;
+            let password = document.getElementById("password").value;
+            if (username && password) {
+                localStorage.setItem("user", username);
+                checkAuth();
+            } else {
+                alert("Please enter valid credentials.");
+            }
+        }
+
+        function signUp() {
+            login();
+        }
+
+        function logout() {
+            localStorage.removeItem("user");
+            checkAuth();
+        }
+
+        function generateToken() {
+            return `${Math.floor(100 + Math.random() * 900)}-${Math.floor(100 + Math.random() * 900)}`;
+        }
+
+        function createToken() {
+            let name = prompt("Enter token name:");
+            if (name) {
+                let tokenId = "token-" + Date.now();
+                let tokenValue = generateToken();
+                
+                let tokenElement = document.createElement("div");
+                tokenElement.className = "token";
+                tokenElement.id = tokenId;
+                
+                let tokenName = document.createElement("span");
+                tokenName.className = "token-name";
+                tokenName.textContent = name + ": ";
+                
+                let tokenValueEl = document.createElement("span");
+                tokenValueEl.className = "token-value hidden-token";
+                tokenValueEl.textContent = "XXX-XXX";
+                
+                let timerEl = document.createElement("div");
+                timerEl.className = "timer";
+                let timeLeft = 30;
+                timerEl.textContent = timeLeft;
+                
+                let buttonContainer = document.createElement("div");
+                buttonContainer.className = "button-container";
+                
+                let copyButton = document.createElement("button");
+                copyButton.textContent = "Copy";
+                copyButton.onclick = function() {
+                    navigator.clipboard.writeText(tokenValue);
+                    alert("Token copied to clipboard!");
+                };
+                
+                let showButton = document.createElement("button");
+                showButton.textContent = "Show";
+                showButton.onmousedown = function() {
+                    tokenValueEl.textContent = tokenValue;
+                    tokenValueEl.classList.remove("hidden-token");
+                };
+                showButton.onmouseup = function() {
+                    tokenValueEl.textContent = "XXX-XXX";
+                    tokenValueEl.classList.add("hidden-token");
+                };
+                
+                buttonContainer.appendChild(copyButton);
+                buttonContainer.appendChild(showButton);
+                
+                function updateTimer() {
+                    timeLeft--;
+                    timerEl.textContent = timeLeft;
+                    if (timeLeft <= 10) {
+                        timerEl.style.backgroundColor = "red";
+                    } else {
+                        timerEl.style.backgroundColor = "green";
+                    }
+                    if (timeLeft <= 0) {
+                        timeLeft = 30;
+                        tokenValue = generateToken();
+                        tokenValueEl.textContent = "XXX-XXX";
+                        tokenValueEl.classList.add("hidden-token");
+                        timerEl.style.backgroundColor = "green";
+                    }
+                }
+                setInterval(updateTimer, 1000);
+                
+                tokenElement.appendChild(tokenName);
+                tokenElement.appendChild(tokenValueEl);
+                tokenElement.appendChild(timerEl);
+                tokenElement.appendChild(buttonContainer);
+                
+                document.getElementById("tokenContainer").appendChild(tokenElement);
+            }
+        }
+
+        checkAuth();
+    </script>
+</body>
+</html>
